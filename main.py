@@ -32,11 +32,10 @@ def step_1(coin_list):
     structured_list_json = json.dumps(structured_list)
     print(structured_list_json)
 
+    # Write list to .json file
     with open("structured_triangular_pairs.json", "w") as fp:
         fp.write(structured_list_json)
 
-    #with open("structured_triangular_pairs.json", "w") as fp:
-        #json.dump(structured_list, fp)
 
 """ MAIN """
 if __name__ == "__main__":
