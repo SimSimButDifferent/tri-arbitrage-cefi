@@ -54,7 +54,6 @@ def step_2():
 
     # Get latest surface prices
     prices_json = func_arbitrage.get_coin_tickers(coin_price_url)
-    print(prices_json)
 
     # Loop through and structure price information
     for t_pair in structured_pairs:
