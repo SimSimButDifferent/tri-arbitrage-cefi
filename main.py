@@ -1,5 +1,6 @@
 import func_arbitrage
 import json
+#import time
 
 # Set Variables
 coin_price_url = "https://poloniex.com/public?command=returnTicker"
@@ -33,7 +34,7 @@ def step_1(coin_list):
 
     # Save structured list
     structured_list_json = json.dumps(structured_list)
-    print(structured_list_json)
+    #print(structured_list_json)
 
     # Write list to .json file
     with open("structured_triangular_pairs.json", "w") as fp:
@@ -50,7 +51,6 @@ def step_2():
     # Get structured pairs
     with open("structured_triangular_pairs.json") as json_file:
         structured_pairs = json.load(json_file)
-    print(structured_pairs)
 
     # Get latest surface prices
     prices_json = func_arbitrage.get_coin_tickers(coin_price_url)
@@ -59,6 +59,8 @@ def step_2():
     for t_pair in structured_pairs:
         prices_dict = func_arbitrage.get_price_for_t_pair(t_pair, prices_json)
         surface_arb = func_arbitrage.calc_triangular_arb_surface_rate(t_pair, prices_dict)
+        if len(surface_arb) > 0:
+            print(surface_arb["trade_description_3"])
 
 
 """ MAIN """
