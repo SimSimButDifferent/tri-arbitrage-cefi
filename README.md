@@ -12,3 +12,8 @@ This bot currently running on poloniex
  ### Step 1 - Structuring triangular pairs for calculation
   1. Structure the list of tradable triangular arbitrage pairs
   2. Save structured list to json file
+
+### Step 2 - Calculate Surface Arbitrage opportunities
+  1. Get structured pairs
+  2. Get latest surface prices
+  3. Loop through and structure price information
