@@ -186,6 +186,7 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
         acquired_coin_t1 = starting_amount * swap_1_rate
 
         """ FORWARD """
+        # Scenario 1
         # Check if the a_quote (acquired_coin) matches b_quote
         if direction == "forward":
             if a_quote == b_quote and calculated == 0:
@@ -210,7 +211,7 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
 
                 acquired_coin_t3 = acquired_coin_t2 * swap_3_rate
                 calculated = 1
-
+        # Scenario 2
         # Check if the a_quote (acquired_coin) matches b_base
         if direction == "forward":
             if a_quote == b_base and calculated == 0:
@@ -235,3 +236,29 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
 
                 acquired_coin_t3 = acquired_coin_t2 * swap_3_rate
                 calculated = 1
+
+                # Scenario 3
+                # Check if the a_quote (acquired_coin) matches c_quote
+                if direction == "forward":
+                    if a_quote == c_quote and calculated == 0:
+                        swap_2_rate = c_bid
+                        acquired_coin_t2 = acquired_coin_t1 * swap_2_rate
+                        direction_trade_2 = "quote_to_base"
+                        contract_2 = pair_c
+
+                        # If c_base (acquired coin) matches b_base
+                        if c_base == b_base:
+                            swap_3 = b_base
+                            swap_3_rate = 1 / b_ask
+                            direction_trade_3 = "base_to_quote"
+                            contract_3 = pair_b
+
+                        # If c_base (acquired coin) matches b_quote
+                        if c_base == b_quote:
+                            swap_3 = b_quote
+                            swap_3_rate = b_bid
+                            direction_trade_3 = "quote_to_base"
+                            contract_3 = pair_b
+
+                        acquired_coin_t3 = acquired_coin_t2 * swap_3_rate
+                        calculated = 1
