@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 
 # Make a GET request
 def get_coin_tickers(url):
@@ -431,3 +432,59 @@ def calc_triangular_arb_surface_rate(t_pair, prices_dict):
             return surface_dict
 
     return surface_dict
+
+# Reformat orderbook for depth calculation
+def reformated_orderbook(prices, c_direction):
+    price_list_main = []
+    if c_direction == "base_to_quote":
+        for p in prices["asks"]:
+            ask_price = float(p[0])
+            adj_price = 1 / ask_price if ask_price != 0 else 0
+            adj_quantity = float(p[1]) * ask_price
+            price_list_main.append([adj_price, adj_quantity])
+    if c_direction == "quote_to_base":
+        for p in prices["bids"]:
+            bid_price = float(p[0])
+            adj_price = 1 / bid_price if bid_price != 0 else 0
+            adj_quantity = float(p[1]) * bid_price
+            price_list_main.append([adj_price, adj_quantity])
+    return price_list_main
+
+# Get the depth from the orderbook
+def get_depth_from_orderbook():
+
+    """
+        CHALLENGES:
+        Full amount of capital can be eaten at first level
+        Some of the amount in can be eaten up by multiple levels
+        Some coins may not have enough liquidity
+    """
+
+    # Extract initial variables
+    swap_1 = "USDT"
+    starting_amount = 100
+    starting_amount_dict = {
+        "USDT": 100,
+        "USDC": 100,
+        "BTC": 0.05,
+        "ETH": 0.1
+    }
+    if swap_1 in starting_amount_dict:
+        starting_amount = starting_amount_dict[swap_1]
+
+    # Define Pairs
+
+    contract_1 = "USDT_BTC"
+    contract_2 = "BTC_INJ"
+    contract_3 = "USDT_INJ"
+
+    # Define direction for trade
+    contract_1_direction = "base_to_quote"
+    contract_2_direction = "base_to_quote"
+    contract_3_direction = "quote_to_base"
+
+    # Get orderbook for first trade assesement
+    url1 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_1}&depth=20"
+    depth_1_prices = get_coin_tickers(url1)
+    depth_1_reformatted_prices = reformated_orderbook(depth_1_prices, contract_1_direction)
+    print(depth_1_reformatted_prices)
