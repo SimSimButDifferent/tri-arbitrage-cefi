@@ -445,24 +445,65 @@ def reformated_orderbook(prices, c_direction):
     if c_direction == "quote_to_base":
         for p in prices["bids"]:
             bid_price = float(p[0])
-            adj_price = 1 / bid_price if bid_price != 0 else 0
-            adj_quantity = float(p[1]) * bid_price
+            adj_price = bid_price if bid_price != 0 else 0
+            adj_quantity = float(p[1])
             price_list_main.append([adj_price, adj_quantity])
     return price_list_main
 
-# Get the depth from the orderbook
-def get_depth_from_orderbook():
+# Get acquired coin (AKA - depth calculation)
+def calculate_acquired_coin(amount_in, orderbook):
 
     """
         CHALLENGES:
-        Full amount of capital can be eaten at first level
+        Full amount of starting amount can be eaten at first level
         Some of the amount in can be eaten up by multiple levels
         Some coins may not have enough liquidity
     """
 
+    # Initialize variables
+    trading_balance = amount_in
+    quantity_bought = 0
+    acquired_coin = 0
+    counts = 0
+    for level in orderbook:
+
+        # Extract the level price and quantity
+        level_price = level[0]
+        level_available_quantity = level[1]
+
+        # Amount in is <= first level total amount
+        if trading_balance <= level_available_quantity:
+            quantity_bought = trading_balance
+            trading_balance = 0
+            amount_bought = quantity_bought * level_price
+
+        # Amount in is <= first level total amount
+        if trading_balance > level_available_quantity:
+            quantity_bought = level_available_quantity
+            trading_balance -= quantity_bought
+            amount_bought = quantity_bought * level_price
+
+        # Accumulate acquired coin
+        acquired_coin = acquired_coin + amount_bought
+
+        # Exit Trade
+        if trading_balance == 0:
+            return acquired_coin
+
+        # Exit if not enough order book levels
+        counts += 1
+        if counts == len(orderbook):
+            return 0
+
+
+
+
+# Get the depth from the orderbook
+def get_depth_from_orderbook():
+
     # Extract initial variables
     swap_1 = "USDT"
-    starting_amount = 100
+    starting_amount = 1
     starting_amount_dict = {
         "USDT": 100,
         "USDC": 100,
@@ -488,3 +529,20 @@ def get_depth_from_orderbook():
     depth_1_prices = get_coin_tickers(url1)
     depth_1_reformatted_prices = reformated_orderbook(depth_1_prices, contract_1_direction)
     print(depth_1_reformatted_prices)
+    time.sleep(0.3)
+    url2 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_2}&depth=20"
+    depth_2_prices = get_coin_tickers(url2)
+    depth_2_reformatted_prices = reformated_orderbook(depth_2_prices, contract_2_direction)
+    print(depth_2_reformatted_prices)
+    time.sleep(0.3)
+    url3 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_3}&depth=20"
+    depth_3_prices = get_coin_tickers(url3)
+    depth_3_reformatted_prices = reformated_orderbook(depth_3_prices, contract_3_direction)
+    print(depth_3_reformatted_prices)
+
+    # Get Acquired coins
+    acquired_coin_t1 = calculate_acquired_coin(starting_amount, depth_1_reformatted_prices)
+    acquired_coin_t2 = calculate_acquired_coin(acquired_coin_t1, depth_2_reformatted_prices)
+    acquired_coin_t3 = calculate_acquired_coin(acquired_coin_t2, depth_3_reformatted_prices)
+
+    print(starting_amount, acquired_coin_t3)
