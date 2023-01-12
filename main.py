@@ -1,3 +1,5 @@
+import time
+
 import func_arbitrage
 import json
 #import time
@@ -57,17 +59,18 @@ def step_2():
 
     # Loop through and structure price information
     for t_pair in structured_pairs:
+        time.sleep(0.3)
         prices_dict = func_arbitrage.get_price_for_t_pair(t_pair, prices_json)
         surface_arb = func_arbitrage.calc_triangular_arb_surface_rate(t_pair, prices_dict)
         if len(surface_arb) > 0:
-            print(surface_arb["trade_description_1"])
-            print(surface_arb["trade_description_2"])
-            print(surface_arb["trade_description_3"])
+            real_rate_arb = func_arbitrage.get_depth_from_orderbook(surface_arb)
+            print(real_rate_arb)
+            time.sleep(20)
 
 
 """ MAIN """
 if __name__ == "__main__":
     #coin_list = step_0()
     #structured_pairs = step_1(coin_list)
-    #step_2()
-    func_arbitrage.get_depth_from_orderbook()
+    while True:
+        step_2()

@@ -477,7 +477,7 @@ def calculate_acquired_coin(amount_in, orderbook):
             trading_balance = 0
             amount_bought = quantity_bought * level_price
 
-        # Amount in is <= first level total amount
+        # Amount in is > first level total amount
         if trading_balance > level_available_quantity:
             quantity_bought = level_available_quantity
             trading_balance -= quantity_bought
@@ -499,11 +499,11 @@ def calculate_acquired_coin(amount_in, orderbook):
 
 
 # Get the depth from the orderbook
-def get_depth_from_orderbook():
+def get_depth_from_orderbook(surface_arb):
 
     # Extract initial variables
-    swap_1 = "USDT"
-    starting_amount = 1
+    swap_1 = surface_arb["swap_1"]
+    starting_amount = 100
     starting_amount_dict = {
         "USDT": 100,
         "USDC": 100,
@@ -514,35 +514,50 @@ def get_depth_from_orderbook():
         starting_amount = starting_amount_dict[swap_1]
 
     # Define Pairs
-
-    contract_1 = "USDT_BTC"
-    contract_2 = "BTC_INJ"
-    contract_3 = "USDT_INJ"
+    contract_1 = surface_arb["contract_1"]
+    contract_2 = surface_arb["contract_2"]
+    contract_3 = surface_arb["contract_3"]
 
     # Define direction for trade
-    contract_1_direction = "base_to_quote"
-    contract_2_direction = "base_to_quote"
-    contract_3_direction = "quote_to_base"
+    contract_1_direction = surface_arb["direction_trade_1"]
+    contract_2_direction = surface_arb["direction_trade_2"]
+    contract_3_direction = surface_arb["direction_trade_3"]
 
     # Get orderbook for first trade assesement
     url1 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_1}&depth=20"
     depth_1_prices = get_coin_tickers(url1)
     depth_1_reformatted_prices = reformated_orderbook(depth_1_prices, contract_1_direction)
-    print(depth_1_reformatted_prices)
     time.sleep(0.3)
     url2 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_2}&depth=20"
     depth_2_prices = get_coin_tickers(url2)
     depth_2_reformatted_prices = reformated_orderbook(depth_2_prices, contract_2_direction)
-    print(depth_2_reformatted_prices)
     time.sleep(0.3)
     url3 = f"https://poloniex.com/public?command=returnOrderBook&currencyPair={contract_3}&depth=20"
     depth_3_prices = get_coin_tickers(url3)
     depth_3_reformatted_prices = reformated_orderbook(depth_3_prices, contract_3_direction)
-    print(depth_3_reformatted_prices)
+
 
     # Get Acquired coins
     acquired_coin_t1 = calculate_acquired_coin(starting_amount, depth_1_reformatted_prices)
     acquired_coin_t2 = calculate_acquired_coin(acquired_coin_t1, depth_2_reformatted_prices)
     acquired_coin_t3 = calculate_acquired_coin(acquired_coin_t2, depth_3_reformatted_prices)
 
-    print(starting_amount, acquired_coin_t3)
+    # Calculate Profit Loss (aka - real rate)
+    profit_loss = acquired_coin_t3 - starting_amount
+    real_rate_perc = (profit_loss / starting_amount * 100 if profit_loss != 0 else 0)
+
+    if real_rate_perc > 0:
+        ret_dict = {
+            "profit_loss": profit_loss,
+            "real_rate_perc": real_rate_perc,
+            "contract_1": contract_1,
+            "contract_2": contract_2,
+            "contract_3": contract_3,
+            "contract_1_direction": contract_1_direction,
+            "contract_2_direction": contract_2_direction,
+            "contract_3_direction": contract_3_direction
+        }
+
+        return ret_dict
+    else:
+        return {}
