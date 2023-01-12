@@ -17,3 +17,6 @@ This bot currently running on poloniex
   1. Get structured pairs
   2. Get latest surface prices
   3. Loop through and structure price information
+  
+### Code executes (at current settings) every 20 seconds, looping through all the pairs on poloniex and returning any profitable arbitrage opportunities.
+- Not recommended, with my testing so far i have not seen any that would give more then 0.01 percent profit (not including trading fees). This is purely to get the         code structure for this type of arbitrage, so that it can be applied to other things. Also this code will probably stop working from january 31st 2023, when the         legacy poloniex api is decomissioned.
