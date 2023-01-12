@@ -544,9 +544,9 @@ def get_depth_from_orderbook(surface_arb):
 
     # Calculate Profit Loss (aka - real rate)
     profit_loss = acquired_coin_t3 - starting_amount
-    real_rate_perc = (profit_loss / starting_amount * 100 if profit_loss != 0 else 0)
+    real_rate_perc = (profit_loss / starting_amount) * 100 if profit_loss != 0 else 0
 
-    if real_rate_perc > 0:
+    if real_rate_perc > -3:
         ret_dict = {
             "profit_loss": profit_loss,
             "real_rate_perc": real_rate_perc,
